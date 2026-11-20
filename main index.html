@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Inx Academy - Enterprise Developer Assessment & AI LMS Platform</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -214,7 +214,7 @@
         <main class="flex-grow p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
 
             <!-- AUTHENTICATION VIEW -->
-            <div id="view-auth" class="max-w-md mx-auto my-6 sm:my-10 space-y-6 px-2">
+            <a href="./" class="text-emerald-500 underline">← Practice room</a><div id="view-auth" class="max-w-md mx-auto my-6 sm:my-10 space-y-6 px-2">
                 <div class="text-center space-y-2">
                     <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-600 mx-auto flex items-center justify-center text-slate-950 text-2xl font-black shadow-xl pulse-glow mb-4">
                         <i data-lucide="terminal" class="w-8 h-8"></i>
@@ -226,7 +226,7 @@
                 <div class="glass rounded-3xl p-5 sm:p-8 space-y-5 shadow-2xl border border-slate-200 dark:border-slate-800">
                     <div class="flex p-1 bg-slate-200/60 dark:bg-slate-900 rounded-2xl text-xs font-bold">
                         <button id="auth-tab-login" onclick="setAuthMode('login')" class="flex-1 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition-all">Sign In</button>
-                        <button id="auth-tab-register" onclick="setAuthMode('register')" class="flex-1 py-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all">New Account</button>
+                        <span class="p-2">Demo accounts</span>
                     </div>
 
                     <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-3 sm:space-y-4">
@@ -642,8 +642,8 @@
 
     <script>
         // INDEXEDDB ENGINE SETUP
-        const db = new Dexie('InxAcademyDB');
-        db.version(1).stores({
+        const db = window.Dexie ? new window.Dexie('InxAcademyDB') : null;
+        db?.version(1).stores({
             submissions: 'id, studentName, examTitle, passed',
             drafts: 'id, code, lastSaved'
         });
@@ -928,7 +928,7 @@
             setupAntiCheatListener();
             setupHotkeys();
             renderActivityHeatmap();
-            lucide.createIcons();
+            window.lucide?.createIcons();
         });
 
         async function runCodeRemoteEngine(lang, code) {
@@ -1046,6 +1046,9 @@
             e.preventDefault();
             const email = document.getElementById('input-auth-email').value;
             const role = document.getElementById('input-auth-role').value;
+            const valid = (role === 'student' && ['kavin@inx.edu','sara@inx.edu'].includes(email) && document.getElementById('input-auth-pass').value === 'student123') ||
+                (role === 'instructor' && email === 'admin@inx.edu' && document.getElementById('input-auth-pass').value === 'admin123');
+            if (!valid) { showToast('Select a demo shortcut and use its matching role and password.'); return; }
             currentUser = {
                 name: email === 'sara@inx.edu' ? 'Sara Connor' : (role === 'instructor' ? 'Dr. Aris' : 'RB Kavin'),
                 email: email,
@@ -1075,6 +1078,8 @@
             document.getElementById('app-nav').classList.remove('hidden');
             document.getElementById('user-badge-container').classList.remove('hidden');
             document.getElementById('user-name-display').textContent = currentUser.name;
+            answeredMcqs = currentUser.answers || {};
+            currentMcqStepIdx = 0;
             startPortalTimeTracker();
             switchTab(currentUser.role === 'instructor' ? 'instructor-reports' : 'student-dashboard');
         }
@@ -1101,7 +1106,7 @@
             if (tabId === 'leaderboard') renderLeaderboard();
             if (tabId === 'assessments') renderStudentAssessments();
             if (tabId === 'instructor-reports') renderInstructorReports();
-            lucide.createIcons();
+            window.lucide?.createIcons();
         }
 
         function renderStudentDashboard() {
@@ -1174,6 +1179,8 @@
         function checkSequentialAnswer(mcqId, chosenIdx) {
             if (answeredMcqs.hasOwnProperty(mcqId)) return;
             answeredMcqs[mcqId] = chosenIdx;
+            currentUser.answers = answeredMcqs;
+            saveUserSession();
             const item = MCQS_DATA.find(m => m.id === mcqId);
             if (chosenIdx === item.correct) { currentUser.xp += 25; saveUserSession(); showToast('+25 XP Awarded!'); }
             renderSequentialMcqs();
@@ -1280,7 +1287,7 @@
 
         function setDsMode(mode) { dsMode = mode; dsState = []; renderDsVisualizer(); }
         function dsPush() { dsState.push(document.getElementById('ds-input-val').value || 42); renderDsVisualizer(); }
-        function dsPop() { if (dsState.length > 0) dsState.pop(); renderDsVisualizer(); }
+        function dsPop() { if (dsMode === 'queue') dsState.shift(); else dsState.pop(); renderDsVisualizer(); }
         function dsClear() { dsState = []; renderDsVisualizer(); }
 
         function renderDsVisualizer() {
@@ -1329,18 +1336,25 @@
         }
 
         async function submitActiveExam() {
-            isExamActive = false;
+            if (!isExamActive) return;
+            const input = document.getElementById('exam-code-input');
+            if (!input.value.trim() || input.value.trim() === input.defaultValue.trim()) { showToast('Enter your solution first.'); return; }
             const newReport = {
                 id: 'rep_' + Date.now(),
                 studentName: currentUser.name,
                 batch: currentUser.batch,
-                score: 90,
-                passed: true,
+                code: input.value,
+                score: null,
                 timeSpent: formatTimeSecs(activeSessionSeconds)
             };
-            reportsData.push(newReport);
-            localStorage.setItem('inx_reports', JSON.stringify(reportsData));
-            await db.submissions.put(newReport);
+            const next = [...reportsData, newReport];
+            try { localStorage.setItem('inx_reports', JSON.stringify(next)); }
+            catch { showToast('Unable to save. Your code is still in the editor.'); return; }
+            reportsData = next;
+            isExamActive = false;
+            input.readOnly = true;
+            input.parentElement.querySelector('button').disabled = true;
+            try { await db?.submissions.put(newReport); } catch { /* Local report already saved. */ }
             showToast('Exam submitted successfully!', 'success');
         }
 
@@ -1353,8 +1367,8 @@
                     <td class="py-2.5 px-3 font-bold">${rep.studentName}</td>
                     <td class="py-2.5 px-3 text-emerald-400">${rep.batch}</td>
                     <td class="py-2.5 px-3 font-mono text-cyan-400">${rep.timeSpent}</td>
-                    <td class="py-2.5 px-3 font-black">${rep.score}%</td>
-                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-500">PASSED</span></td>
+                    <td class="py-2.5 px-3 font-black">${rep.score == null ? "—" : rep.score + "%"}</td>
+                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-500">${rep.score == null ? "Awaiting review" : "Legacy result"}</span></td>
                     <td class="py-2.5 px-3 text-right"><button onclick="openAnnotationModal('${rep.id}')" class="px-2 py-1 bg-cyan-600/20 text-cyan-400 rounded-xl text-[10px]">Annotate</button></td>
                 `;
                 tableBody.appendChild(tr);
@@ -1362,17 +1376,26 @@
         }
 
         function openAnnotationModal(repId) {
+            const report = reportsData.find(row => row.id === repId);
+            if (!report) return;
+            document.getElementById('annotate-code-view').textContent = report.code || 'No code recorded.';
+            document.getElementById('annotate-feedback-input').value = report.feedback || '';
             activeAnnotatingReportId = repId;
             document.getElementById('code-annotation-modal').classList.remove('hidden');
         }
         function closeAnnotationModal() { document.getElementById('code-annotation-modal').classList.add('hidden'); }
-        function saveCodeAnnotation() { closeAnnotationModal(); showToast('Annotation Saved!'); }
+        function saveCodeAnnotation() {
+            const next = reportsData.map(row => row.id === activeAnnotatingReportId ? {...row, feedback: document.getElementById('annotate-feedback-input').value} : row);
+            try { localStorage.setItem('inx_reports', JSON.stringify(next)); } catch { showToast('Could not save feedback.'); return; }
+            reportsData = next;
+            closeAnnotationModal(); showToast('Feedback saved.');
+        }
 
         function openStudentProfileModal() { document.getElementById('student-profile-modal').classList.remove('hidden'); }
         function closeStudentProfileModal() { document.getElementById('student-profile-modal').classList.add('hidden'); }
 
         function toggleAiMentor() { document.getElementById('ai-mentor-drawer').classList.toggle('hidden'); }
-        function sendAiPrompt() { document.getElementById('ai-user-prompt').value = ''; }
+        function sendAiPrompt() { showToast('AI mentoring is unavailable in this demo.'); }
         function exportReportsCSV() { showToast('CSV Exported!', 'success'); }
 
         function showToast(m) {

@@ -1,6 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Practice room · INX Academy</title><style>
 *{box-sizing:border-box}body{margin:0;background:#f5f6f1;color:#20372f;font:16px/1.55 system-ui,sans-serif}header{background:#173c33;color:white}nav,main{max-width:1020px;margin:auto;padding:22px clamp(18px,5vw,56px)}nav,.row{display:flex;align-items:center;justify-content:space-between;gap:12px}nav strong{font-size:21px;letter-spacing:-1px}nav a{color:#dbf4df;font-size:14px}main{padding-top:clamp(32px,6vw,76px)}h1{font-size:clamp(40px,7vw,72px);line-height:1;letter-spacing:-.065em;margin:0 0 16px}p{color:#50675d}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:32px 0}.card,article{background:white;border:1px solid #cedbd1;border-radius:18px;padding:24px}.card{text-align:left;display:grid;gap:12px;color:inherit}.card strong{font-size:23px}.card small{font-size:14px;color:#52665a}.card:hover,.choice:hover{border-color:#21765a}progress{width:100%;height:8px;accent-color:#21765a}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #007fbe;outline-offset:3px}.action,.choice{border:1px solid #9eb9a9;border-radius:9px;background:white;color:#173c33;padding:10px 16px}.primary{background:#195b47;color:white}.choice{display:block;width:100%;text-align:left;margin:8px 0}.right{background:#d7f3df}.wrong{background:#ffe6df}.choice:disabled{cursor:default}.action:disabled{opacity:.45}article{max-width:720px;margin:16px auto}h2{line-height:1.25}#feedback{min-height:1.55em}[hidden]{display:none!important}@media(max-width:600px){.grid{grid-template-columns:1fr}.card,article{padding:18px}nav{padding-block:16px}}
-</style></head><body><header><nav><strong>INX Academy</strong><a href="./main%20index.html">Coding tools &amp; exams ↗</a></nav></header><main><section id="home"><h1>Practice room</h1><p>Choose a track. Answer at your own pace and pick up where you left off on this browser.</p><div class="grid" id="tracks"></div></section><section id="lesson" hidden><button id="back" class="action">← All tracks</button><article><p id="pos"></p><h2 id="question" tabindex="-1"></h2><div id="choices"></div><p role="status" id="feedback"></p><div class="row"><button class="action" id="prev">Previous</button><button class="action primary" id="next">Next question</button></div></article></section><p role="status" id="notice"></p></main><script>
+body{background:#0c1319;color:#ecf3ee;font-family:Inter,system-ui,sans-serif}header{background:#101a20;border-bottom:1px solid #2e403f}nav,main{max-width:1160px}nav a,a{color:#a4efcd}main{padding-top:32px;padding-bottom:40px}p,.card small{color:#b6c8c3}.hero{display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;background:radial-gradient(ellipse at 90% 5%,#254d49,transparent 65%),#122622;border:1px solid #31544b;padding:clamp(24px,5vw,56px);border-radius:24px;margin-bottom:30px}.hero p{max-width:42ch}.hero h1{font-size:clamp(36px,6vw,68px)}.meter{--pct:0%;background:conic-gradient(#9ceac3 var(--pct),#35534d 0);padding:7px;border-radius:50%;width:124px;aspect-ratio:1}.meter div{height:100%;border-radius:50%;background:#18312c;display:grid;align-content:center;text-align:center}.meter b{font-size:28px}.meter small{color:#b8d4ca}.card,article,dialog{background:#152028;border-color:#304149;color:#eff7f3}.card{border-top:3px solid var(--accent,#93e0c2);transition:transform .18s,border-color .18s}.card:nth-child(2){--accent:#99c7ef}.card:nth-child(3){--accent:#f3cf8b}.card:nth-child(4){--accent:#d2b2ea}.card span{color:var(--accent,#93e0c2)}.card:hover{transform:translateY(-2px)}.action,.choice,select{background:#192a30;color:#e8f2ef;border:1px solid #47615b;border-radius:10px;padding:10px 16px;font:inherit}.primary{background:#a8edcb;color:#103a2c;border-color:#a8edcb;font-weight:700}.right{background:#22533e}.wrong{background:#623b37}.grid{margin:16px 0}.hero .row{justify-content:start;flex-wrap:wrap}.hero a{padding:10px}.arena-form{display:grid;gap:15px}.arena-form label{display:grid;gap:5px}dialog{width:min(510px,calc(100% - 30px));padding:26px;border-radius:18px;max-height:85vh;overflow:auto}dialog::backdrop{background:#071018d9}dialog h2{margin-top:8px}#review li{margin:.7em 0} .card:focus-visible{outline:3px solid #96d9ff}@media(max-width:550px){.hero{grid-template-columns:1fr}.meter{width:auto;aspect-ratio:auto;padding:0;background:none}.meter div{display:flex;align-items:baseline;gap:7px;background:none;text-align:left}.meter b{font-size:20px}}@media(prefers-reduced-motion:reduce){.card{transition:none}}
+</style></head><body><header><nav><strong>INX Academy</strong><a href="./main%20index.html">Coding tools &amp; exams ↗</a></nav></header><main><section id="home"><div class="hero"><div><h1>Developer workspace</h1><p>Build your skills through guided practice. Put them to the test in the assessment arena.</p><div class="row"><button class="action primary" id="arenaOpen">Enter assessment arena →</button><a href="#tracks">Explore tracks</a></div></div><div class="meter" id="meter"><div><b id="total">0 / 80</b><small>answered in practice</small></div></div></div><h2>Practice tracks</h2><div class="grid" id="tracks"></div></section><section id="lesson" hidden><button id="back" class="action">← All tracks</button><article><p id="pos"></p><h2 id="question" tabindex="-1"></h2><div id="choices"></div><p role="status" id="feedback"></p><div class="row"><button class="action" id="prev">Previous</button><button class="action primary" id="next">Next question</button></div></article></section><p role="status" id="notice"></p></main><dialog id="arena"><div class="row"><strong>Assessment arena</strong><button class="action" id="closeArena" aria-label="Close arena">Close</button></div><div id="arenaContent"></div></dialog><script>
 const bank=[
             // C LANGUAGE (20)
             { id: 'c_1', track: 'C', question: '1. Which keyword is used to return a value from a C function?', options: ['break', 'return', 'exit', 'yield'], correct: 1, exp: '"return" exits a function and returns a value.' },
@@ -103,6 +104,9 @@ try {
 function save(){try{localStorage.setItem(key,JSON.stringify({answers,positions}));}catch{byId('notice').textContent='Storage unavailable. Progress lasts for this visit.';}}
 function element(tag,text,cls){const node=document.createElement(tag);node.textContent=text;if(cls)node.className=cls;return node;}
 function home(){
+ const completed=Object.keys(answers).length;
+ byId('total').textContent=completed+' / '+bank.length;
+ byId('meter').style.setProperty('--pct',100*completed/bank.length+'%');
  byId('home').hidden=false;byId('lesson').hidden=true;byId('tracks').replaceChildren();
  for(const [t,title] of Object.entries(labels)){
   const questions=list(t),done=questions.filter(q=>q.id in answers).length;
@@ -125,4 +129,33 @@ function render(){
 function move(step){index+=step;positions[track]=index;save();render();byId('question').focus();}
 function leave(){home();byId('tracks').children[Object.keys(labels).indexOf(track)].focus();}
 byId('prev').onclick=()=>move(-1);byId('next').onclick=()=>index===list(track).length-1?leave():move(1);byId('back').onclick=leave;home();
+
+const arena=byId('arena'), panel=byId('arenaContent');
+function setupArena(){
+ panel.replaceChildren(element('h2','Start an assessment'));
+ const form=element('form','','arena-form');
+ function select(label,choices){const field=element('label',label),menu=element('select','');for(const [value,title] of choices){const option=element('option',title);option.value=value;menu.append(option);}field.append(menu);form.append(field);return menu;}
+ const subject=select('Skill track',Object.entries(labels));
+ const pace=select('Assessment length',[['5','Quick · 5 questions'],['10','Standard · 10 questions'],['20','Full track · 20 questions']]);
+ form.append(element('button','Start assessment','action primary'));panel.append(form);
+ form.onsubmit=e=>{e.preventDefault();const pool=[...list(subject.value)];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}runArena(pool.slice(0,Number(pace.value)),subject.value);};
+}
+function runArena(questions,subject){
+ const picks=[];
+ function step(){
+  const q=questions[picks.length];
+  if(!q){
+   const score=questions.filter((x,i)=>picks[i]===x.correct).length;
+   panel.replaceChildren(element('h2',score+' / '+questions.length+' correct'),element('p',labels[subject]+' assessment complete.'));
+   const review=element('ol','');review.id='review';
+   questions.forEach((x,i)=>{const item=element('li',x.question.replace(/^\d+\.\s*/,''));item.append(element('p',(picks[i]===x.correct?'Correct. ':'Your answer: '+x.options[picks[i]]+'. Correct answer: '+x.options[x.correct]+'. ')+x.exp));review.append(item);});
+   const again=element('button','New assessment','action primary');again.onclick=setupArena;panel.append(again,review);again.focus();return;
+  }
+  const heading=element('h2',q.question.replace(/^\d+\.\s*/,''));heading.tabIndex=-1;
+  panel.replaceChildren(element('p',labels[subject]+' · '+(picks.length+1)+' / '+questions.length),heading);
+  q.options.forEach((option,i)=>{const button=element('button',option,'choice');button.onclick=()=>{picks.push(i);step();};panel.append(button);});heading.focus();
+ }step();
+}
+byId('arenaOpen').onclick=()=>{setupArena();arena.showModal();};
+byId('closeArena').onclick=()=>arena.close();
 </script></body></html>
